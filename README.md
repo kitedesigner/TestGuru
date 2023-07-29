@@ -1,14 +1,24 @@
-# TestGuru
+# README
 
+This README would normally document whatever steps are necessary to get the
+application up and running.
 
-* Ruby v3.2.2
-* Rails v6.0.6.1
+Things you may want to cover:
 
+* Ruby version
 
-### Список сущностей для проекта
-1. Администратор
-2. Пользователь
-3. Тест
-4. Вопрос
-5. Ответ
-6. Категории# Git-root-TestGuru-.git-
+* System dependencies
+
+* Configuration
+
+* Database creation
+
+* Database initialization
+
+* How to run the test suite
+
+* Services (job queues, cache servers, search engines, etc.)
+
+* Deployment instructions
+
+* ...
