@@ -1,0 +1,190 @@
+1. Создайте Rails-модели с нужными атрибутами для следующих сущностей:
+Тест
+Вопрос
+Ответ
+Пользователь
+Категория
+2. С помощью механизма миграций, добавьте ограничения целостности на уровне БД в соответствующих таблицах для необходимых атрибутов так, чтобы они не могли содержать значение NULL
+3. С помощью механизма миграций добавьте значения по умолчанию:
+Для уровня Теста
+Для атрибута correct у Ответа
+
+Модель тест - поле title, level
+Модель вопрос - поле question
+Модель ответ - поле answer, correct
+Модель пользователь - user
+Модель категория - category
+
+создать модель
+
+bin/rails g model
+bin/rails g model test title:string level:integer
+bin/rails g model category category:string --force - принудительная перезапись модели
+
+удалить
+bundle exec rake db:rollback
+rails destroy model <model_name>
+
+bin/rails g migration AddTestsTitleNullConstraint
+
+def change
+  change_column_null(:tests, title, false)
+end
+bin/rails db:migrate
+
+Значение для базы данных по умолчанию
+def change
+  change_column_default :table, :column, value
+end
+
+Работа с базами данных
+rake db:rollback 	- отмена миграции
+
+создаёт таблицу с полями и ключами
+$ bin/rails generate migration AddPartNumberToProducts part_number:string:index
+
+добавить внешний ключ
+$ add_foreign_key :articles, :authors
+
+Миграция сразу с ключом
+$ bin/rails generate migration AddPartNumberToProducts part_number:string
+
+Добавление миграции
+bin/rails g model tests title:string level:integer
+bin/rails db:migrate
+
+Удаление и откат миграций
+rake db:migrate VERSION=20100905201547		- удалить миграцию
+rake db:migrate:down VERSION=20100905201547	- откатить одну миграцию
+
+Статус миграций
+rake db:migrate:status
+
+Создаёт структуру перед выполнением миграций
+rake db:schema:load
+
+
+add_foreign_key :articles, :authors
+создает
+
+ ALTER TABLE "articles" ADD CONSTRAINT fk_rails_e74ce85cbc FOREIGN KEY ("author_id") REFERENCES "authors" ("id")
+
+$ rails console 
+$ ActiveRecord::Migration.drop_table(:comments)	- удаляет базу
+$ ActiveRecord::Migration.connection.tables - отображает все таблицы
+$ rake db:migrate
+
+change_column_default :tests, :level, true
+    change_column_default :answers, :correct, 'Ответ верен'
+
+Продолжение. ActiveRecordQuery
+test = Test.new	
+test.title = 'Ruby' - объект в памяти
+test = Test.create(title: 'Ruby', level: 1) - пишем в базу
+test.new_record? - возвращает true если запись в базу не производилась и false если производилась
+test.persisted? - метод обратный new_record?
+
+find - позволяет извлечь одну строку из таблицы
+test = Test.find(1) - вернёт строку с идентификатором 1 (поле id)
+test = Test.find([1, 2]) - вернёт массив записей. 
+
+test = Test.find_by(id: 5) - найти строку по идентификатору. если нет записи возвращает nil без исключения
+test = Test.find_by!(id: 5) - тоже самое, только если не найдёт выкидывает исключение
+
+Test.all - выводит все записи
+pp Test.all - тоже самое, но в удобочитаемом виде
+
+Test.first - смотрит на идентификатор id. либо наименший (первый) или наибольший (последний)
+Test.last
+
+Test.where(title: 'Rails') - возвращет массив объектов. если данных нет, вернёт пустой массив
+Test.where(level: [1, 2, 3])
+Test.where(level: 0..3)
+
+Time.current - текущее время
+1.hour.ago - час назад
+1.hour.from_now - час вперед
+Test.where(created_at: 1.day.ago..Time.current)
+pp Test.where("level >= 1")
+pp Test.where("level >= #{level} AND title = 'Rails'") тоже самое с интерполяцией (не использовать)
+pp Test.where("level >= ? AND title = ?", level, title) проверка на вредоносный SQL запрос в интерполяции, лучше использовать его
+pp Test.where("level >= :level AND title = :title", level: level, title: title)
+pp Test.where.not(title: %w[Rails Ruby])
+pp Test.where(title: 'Ruby').or(Test.where(title: 'Rails'))
+pp Test.select(:id, :title) - выборка только полей id и title
+pp Test.pluck(:title) - получает массив атрибутов
+Test.update_all(level: 0) - обновить всё
+Test.where(title: %w[Ruby Rails]).update_all(level: 1)
+Test.where(level: 0).delete_all
+Test.where(level: 0).destroy_all
+Test.order('id')
+Test.order('id ASC') - сортировка по возрстанию
+Test.order('id DESC') - сортировка по убванию
+pp Test.order('created_at DESC').limit(1) - выбрать последнюю зпись после сортировки
+Test.find_each(batch_size: 1) { |test| p test }
+test.save - сохрнить изменения
+Test.limit(2) - минимальное количество записей, которое выбирается из базы
+pp Test.order(level: :asc, created_at: :desc) - сортировка по хешу (по двум полям, одно по возрастанию, второ по убванию)
+Test.find_each(batch_size: 1) { |test| p tet }
+Test.joins('JOIN categories ON tests.category_id = categories.id')
+test = Test.find(4)
+test.level = 0
+test.save
+
+Для файла seed.rb (после заполнения сделать)
+rake db:migrate
+rake db:seed
+	или за один шаг
+rake db:setup
+
+sel = Test.joins("JOIN user_test_relations ON user_test_relations.tests_id = tests.id").where('user_test_relations.users_id = 1 AND tests.level = 1')
+
+user_selected = User.select(:id).first
+Test.joins("JOIN user_test_relations ON user_test_relations.tests_id = tests.id").where("user_test_relations.users_id = 'user_selected' AND tests.level = #{level}")
+
+Test.select(:title).order(title: :desc).joins('JOIN categories ON tests.categories_id = categories.id').where("category = '#{cat}'")
+
+Test.joins("JOIN user_test_relations ON user_test_relations.tests_id = tests.id").where("user_test_relations.users_id = id AND tests.level = #{level}")
+
+Test.select(:title).order(title: :desc).joins('JOIN categories ON tests.categories_id = categories.id').where("category = '#{cat}'").pluck(:title)
+
+Test.joins("JOIN user_test_relations ON user_test_relations.tests_id = tests.id").where("user_test_relations.users_id = 1 AND tests.level = #{level}")
+
+.schema --indent questions - отображает структуру таблицы questions
+
+has_one
+has_many (:through)
+has_and_belongs_to_many
+belongs_to
+
+SCOPE методы
+Test.where(level: 0..1).order(created_at: :desc)
+scope :easy, -> { where(level: 0..1).order(created_at: :desc) }
+scope :easy_ruby, -> { easy.where(title: 'Ruby' }
+
+использование scope метода через переменную level
+scope :easy, -> (level) { where(level: level).order(created_at: :desc) }
+Вызов будет выглядеть как Test.easy(1) и можно добавлять дополнительные параметры к запросу Test.easy(0).limit(1)
+
+определение default scope
+default_scope { order(created_at: :desc) } определение scope метода по умолчанию
+
+Отменить scope по дефолту
+Test.unscoped.all
+
+Test.easy.limit(1)
+Test.easy.where(something)
+
+def self.easy(level)
+  where(level: level).first
+end
+эквивалентен
+scope :easy, -> (level) { where(level: level) }
+только при тспользовании эземпляра класса не работает сцепление в запросах.
+
+валидации. проверка условий при сохранении в базу
+validates :title, persence: true, uniqueness: true
+
+связывание происходит в файле routes.rb из каталога config
+bin/rails routes - просмотр имеющихсф маршрутов
+
