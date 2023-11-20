@@ -7,8 +7,9 @@
    has_many :users, through: :attempts
 
    def self.find_by_category_name(name)
-     joins(:category).where(categories: { title: name })
-                     .order(title: :desc)
-                     .pluck(:title)
+     joins(:category)
+      .where(categories: { title: name })
+      .order(title: :desc)
+      .pluck(:title)
    end
  end
