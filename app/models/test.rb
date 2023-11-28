@@ -1,10 +1,15 @@
-# frozen_string_literal: true
+  class Test < ApplicationRecord
+   belongs_to :category
+   belongs_to :author, class_name: 'User'
 
-class Test < ApplicationRecord
-  def self.list_by_category(category_title)
-    joins('INNER JOIN categories ON tests.category_id = categories.id')
-      .where(categories: { title: category_title })
-      .order(title: :desc)
-      .pluck(:title)
+   has_many :questions, dependent: :destroy
+   has_many :attempts
+   has_many :users, through: :attempts
+
+    def self.find_by_category_name(name)
+     joins(:category)
+     .where(categories: { title: name })
+     .order(title: :desc)
+     .pluck(:title)
+   end
   end
-end
