@@ -13,3 +13,4 @@
       errors.add(:base, 'Must have 1 to 4 answers') if question.answers.count >= MAX_ANSWERS_NUMBER
     end
   end
+
