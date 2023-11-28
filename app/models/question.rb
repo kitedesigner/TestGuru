@@ -5,4 +5,3 @@
     validates :body, presence: true
   end
 
-
