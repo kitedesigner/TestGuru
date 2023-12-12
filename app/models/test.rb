@@ -1,28 +1,23 @@
-  class Test < ApplicationRecord
-    belongs_to :category
-    belongs_to :author, class_name: 'User', optional: true
-    has_many :questions, dependent: :destroy
-    has_many :passed_tests
-    has_many :users, through: :passed_tests
+class Test < ApplicationRecord
+  belongs_to :category
+  belongs_to :author, class_name: 'User', foreign_key: :author_id
 
-    validates :name, presence: true, uniqueness: { scope: :level }
-    validates :level, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  has_many :questions, dependent: :destroy
+  has_many :attempts, dependent: :destroy
+  has_many :users, through: :attempts, dependent: :destroy
 
-    scope :easy, -> { where(level: (0..1)) }
-    scope :middle, -> { where(level: (2..4)) }
-    scope :hard, -> { where(level: (5..Float::INFINITY)) }
+  validates :title, presence: true, uniqueness: { scope: :level }
+  validates :level, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 
-    scope :by_category_scope, ->(category_name) {
-      joins(:category)
-          .order(name: :desc)
-          .where(categories: { title: category_name })
-    }
-
-    def self.by_category(category)
-      by_category_scope(category)
-          .order(name: :desc)
-          .pluck(:name)
-    end
-
+  scope :easy, -> { where(level: 0..1) }
+  scope :medium, -> { where(level: 2..4) }
+  scope :hard, -> { where(level: 5..Float::INFINITY) }
+  scope :category_tests, -> (category_name) do
+    joins(:category).where(categories: { title: category_name })
+                    .order(title: :desc)
   end
 
+  def self.find_test_titles_by_category(category_name)
+    category_tests(category_name).pluck(:title)
+  end
+end
