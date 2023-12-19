@@ -1,4 +1,3 @@
-  class Attempt < ApplicationRecord
-   belongs_to :user
-   belongs_to :test
-  end
+class ApplicationRecord < ActiveRecord::Base
+  self.abstract_class = true
+end
